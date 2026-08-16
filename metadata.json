@@ -1,0 +1,6 @@
+{
+  "name": "DIGITALTWIN.AI - Predictive Manufacturing Command Center",
+  "description": "Industrial AI Digital Twin prototype demonstrating real-time vehicle tracking, spatio-temporal deviation detection, counterfactual what-if simulation, and predictive intervention for automotive manufacturing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
