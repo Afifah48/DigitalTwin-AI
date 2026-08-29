@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
