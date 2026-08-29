@@ -1,0 +1,115 @@
+{
+  "timestamp": 1788009072.3738256,
+  "isolation_forest": {
+    "model_name": "Isolation Forest (Model A)",
+    "overall": {
+      "precision": 0.854,
+      "recall": 0.9669,
+      "f1": 0.907,
+      "roc_auc": 0.9897,
+      "pr_auc": 0.9735,
+      "false_positive_rate": 0.0119,
+      "mean_lead_time_seconds": 116.04,
+      "mean_lead_time_minutes": 1.93
+    },
+    "scenarios": {
+      "NORMAL": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0,
+        "false_positive_rate": 0.01
+      },
+      "GRADUAL_S3_DEGRADATION": {
+        "precision": 0.9851,
+        "recall": 0.9429,
+        "f1": 0.9635,
+        "roc_auc": 0.9861,
+        "pr_auc": 0.9759,
+        "false_positive_rate": 0.0019
+      },
+      "SUDDEN_FAILURE": {
+        "precision": 0.8621,
+        "recall": 1.0,
+        "f1": 0.9259,
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "false_positive_rate": 0.0145
+      },
+      "SENSOR_MISSINGNESS": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0,
+        "false_positive_rate": 0.03
+      },
+      "OTHER_STATION_DISTURBANCE": {
+        "precision": 0.8966,
+        "recall": 1.0,
+        "f1": 0.9455,
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "false_positive_rate": 0.0109
+      }
+    },
+    "lead_times_recorded": 91
+  },
+  "lstm_autoencoder": {
+    "model_name": "LSTM Autoencoder (Model B)",
+    "overall": {
+      "precision": 0.2875,
+      "recall": 0.9504,
+      "f1": 0.4415,
+      "roc_auc": 0.9057,
+      "pr_auc": 0.5999,
+      "false_positive_rate": 0.1697,
+      "mean_lead_time_seconds": 97.08,
+      "mean_lead_time_minutes": 1.62
+    },
+    "scenarios": {
+      "NORMAL": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0,
+        "false_positive_rate": 0.0067
+      },
+      "GRADUAL_S3_DEGRADATION": {
+        "precision": 0.6154,
+        "recall": 0.9143,
+        "f1": 0.7356,
+        "roc_auc": 0.9536,
+        "pr_auc": 0.7812,
+        "false_positive_rate": 0.0755
+      },
+      "SUDDEN_FAILURE": {
+        "precision": 0.5319,
+        "recall": 1.0,
+        "f1": 0.6944,
+        "roc_auc": 0.9727,
+        "pr_auc": 0.8125,
+        "false_positive_rate": 0.08
+      },
+      "SENSOR_MISSINGNESS": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0,
+        "false_positive_rate": 0.72
+      },
+      "OTHER_STATION_DISTURBANCE": {
+        "precision": 0.8387,
+        "recall": 1.0,
+        "f1": 0.9123,
+        "roc_auc": 0.9927,
+        "pr_auc": 0.9333,
+        "false_positive_rate": 0.0182
+      }
+    },
+    "lead_times_recorded": 89
+  }
+}

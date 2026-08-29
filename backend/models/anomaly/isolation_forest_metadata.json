@@ -1,0 +1,23 @@
+{
+  "model_name": "isolation_forest",
+  "version": "1.0.0",
+  "n_estimators": 100,
+  "contamination": 0.01,
+  "random_state": 42,
+  "threshold": 0.6616,
+  "feature_names": [
+    "cycle_time",
+    "cycle_time_delta",
+    "utilization",
+    "queue_length",
+    "wip",
+    "temperature",
+    "vibration",
+    "motor_current",
+    "current_variance",
+    "buffer_occupancy",
+    "machine_state_encoded"
+  ],
+  "val_score_min": -0.18068111619645189,
+  "val_score_max": 0.03312494339382699
+}

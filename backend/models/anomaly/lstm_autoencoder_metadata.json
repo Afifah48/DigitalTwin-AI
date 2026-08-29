@@ -1,0 +1,28 @@
+{
+  "model_name": "lstm_autoencoder",
+  "version": "1.0.0",
+  "window_size": 15,
+  "input_dim": 11,
+  "hidden_dim": 32,
+  "num_layers": 2,
+  "epochs": 30,
+  "threshold": 0.61641,
+  "threshold_method": "99th_percentile_nominal_validation",
+  "val_error_mean": 0.38211,
+  "val_error_std": 0.06954,
+  "val_error_p99": 0.61641,
+  "feature_names": [
+    "cycle_time",
+    "cycle_time_delta",
+    "utilization",
+    "queue_length",
+    "wip",
+    "temperature",
+    "vibration",
+    "motor_current",
+    "current_variance",
+    "buffer_occupancy",
+    "machine_state_encoded"
+  ],
+  "random_state": 42
+}
