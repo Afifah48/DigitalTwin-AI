@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "description": "Phase 7 Factory Decision & Operational Intelligence Configuration",
+  "severity_thresholds": {
+    "critical_risk_threshold": 0.70,
+    "high_risk_threshold": 0.50,
+    "medium_risk_threshold": 0.25,
+    "low_risk_threshold": 0.10,
+    "min_confidence_for_critical": 0.60
+  },
+  "root_cause_thresholds": {
+    "vibration_anomaly_threshold": 0.25,
+    "temperature_anomaly_threshold": 75.0,
+    "current_variance_threshold": 0.20,
+    "cycle_time_delta_threshold": 10.0,
+    "buffer_saturation_threshold": 8.5,
+    "buffer_starvation_threshold": 1.0,
+    "blocking_rate_threshold": 0.20,
+    "starvation_rate_threshold": 0.20,
+    "station_anomaly_score_threshold": 0.65,
+    "bottleneck_risk_threshold": 0.60,
+    "vehicle_defect_prob_threshold": 0.60
+  },
+  "propagation_thresholds": {
+    "upstream_blocking_buffer_pressure": 0.80,
+    "downstream_starvation_buffer_pressure": 0.15
+  },
+  "action_priority_weights": {
+    "CRITICAL": 100,
+    "HIGH": 75,
+    "MEDIUM": 50,
+    "LOW": 25
+  },
+  "default_topology": {
+    "station_order": ["S1", "S2", "S3", "S4", "S5", "S6"],
+    "buffer_mapping": {
+      "S1": "B1",
+      "S2": "B2",
+      "S3": "B3",
+      "S4": "B4",
+      "S5": "B5"
+    }
+  }
+}
