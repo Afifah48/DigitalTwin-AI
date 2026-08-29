@@ -12,7 +12,7 @@ from .persistence import TemporalPersistenceTracker
 from .propagation import SpatialPropagationAnalyzer
 from .reasoning import IndustrialReasoningEngine
 from .ranking import StationRanker
-from .pipeline import BottleneckPipeline, Phase4AnomalyProvider, DefaultAnomalyAdapter
+from .pipeline import BottleneckPipeline, Phase4AnomalyProvider, Phase4ServiceAdapter
 from .evaluator import OfflineEvaluator
 
 __all__ = [

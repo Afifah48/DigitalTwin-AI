@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 import pandas as pd
-import numpy as np
+
 
 from ..models.enums import StationId, BufferId, MachineState
 from .models import (
@@ -34,14 +34,16 @@ class Phase4AnomalyProvider(ABC):
         pass
 
 
-class DefaultAnomalyAdapter(Phase4AnomalyProvider):
+class Phase4ServiceAdapter(Phase4AnomalyProvider):
     """
-    Standard Anomaly Adapter providing Phase 4 contract predictions.
-    Derives calibrated score, severity, and top signals from telemetry sensor deviations.
+    Adapter between the Phase 4 AnomalyService and the Phase 5 bottleneck pipeline.
+
+    Phase 5 consumes only the stable AnomalyPrediction contract and does not
+    access Isolation Forest, LSTM, scaler, threshold, or other Phase 4 internals.
     """
 
-    def __init__(self, anomaly_lookup: Optional[Dict[tuple, AnomalyPrediction]] = None):
-        self.anomaly_lookup = anomaly_lookup or {}
+    def __init__(self, phase4_service):
+        self.phase4_service = phase4_service
 
     def get_anomaly_prediction(
         self,
@@ -49,40 +51,33 @@ class DefaultAnomalyAdapter(Phase4AnomalyProvider):
         timestamp: float,
         telemetry: Dict[str, Any],
     ) -> Optional[AnomalyPrediction]:
-        # If pre-computed prediction exists in lookup, return it
-        key = (station_id if isinstance(station_id, str) else station_id.value, timestamp)
-        if key in self.anomaly_lookup:
-            return self.anomaly_lookup[key]
 
-        # Otherwise evaluate heuristic anomaly detection adhering to Phase 4 schema
-        ct_dev = abs(float(telemetry.get("cycle_time_deviation", 0.0)))
-        vib = float(telemetry.get("vibration", 1.0))
-        curr_var = float(telemetry.get("current_variance", 0.1))
+        prediction = self.phase4_service.predict_station(
+            station_id=station_id.value,
+            timestamp=timestamp,
+            station_telemetry=telemetry,
+        )
 
-        score = 0.0
-        top_sigs = []
-        if ct_dev > 0.12:
-            score += min(0.5, ct_dev)
-            top_sigs.append("cycle_time")
-        if vib > 2.5:
-            score += min(0.3, (vib - 2.5) * 0.15)
-            top_sigs.append("vibration")
-        if curr_var > 0.6:
-            score += min(0.2, (curr_var - 0.6) * 0.2)
-            top_sigs.append("current_variance")
-
-        score = float(np.clip(score, 0.0, 1.0))
-        detected = score > 0.35
-        severity = "HIGH" if score > 0.70 else ("MEDIUM" if score > 0.40 else "LOW")
+        if prediction is None:
+            return None
 
         return AnomalyPrediction(
-            station_id=station_id if isinstance(station_id, StationId) else StationId(station_id),
-            timestamp=timestamp,
-            anomaly_score=round(score, 4),
-            anomaly_probability=round(score, 4) if detected else None,  # Test tolerating null probability
-            severity=severity,
-            detected=detected,
-            top_signals=top_sigs,
+            station_id=station_id,
+            timestamp=float(prediction.timestamp),
+            anomaly_score=float(prediction.anomaly_score),
+            anomaly_probability=(
+                float(prediction.anomaly_probability)
+                if prediction.anomaly_probability is not None
+                else None
+            ),
+            severity=(
+                prediction.severity.value
+                if hasattr(prediction.severity, "value")
+                else str(prediction.severity)
+            ),
+            detected=bool(prediction.detected),
+            lead_time_if_known=prediction.lead_time_if_known,
+            top_signals=list(prediction.top_signals or []),
         )
 
 
@@ -108,7 +103,7 @@ class BottleneckPipeline:
         propagation_analyzer: Optional[SpatialPropagationAnalyzer] = None,
         reasoning_engine: Optional[IndustrialReasoningEngine] = None,
     ):
-        self.anomaly_provider = anomaly_provider or DefaultAnomalyAdapter()
+        self.anomaly_provider = anomaly_provider 
         self.risk_engine = risk_engine or BottleneckRiskEngine()
         self.persistence = persistence_tracker or TemporalPersistenceTracker()
         self.propagation = propagation_analyzer or SpatialPropagationAnalyzer()
