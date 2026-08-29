@@ -1,4 +1,0 @@
-simpy>=4.1.0
-pydantic>=2.10.0
-numpy>=2.0.0
-pytest>=8.0.0
