@@ -1,0 +1,149 @@
+{
+  "selected_model": "xgboost",
+  "model_version": "1.0.0",
+  "dataset_version": "v1.0-synthetic-multirun",
+  "num_features": 45,
+  "feature_names": [
+    "model_Sedan",
+    "model_SUV",
+    "model_Truck",
+    "model_Coupe",
+    "variant_Base",
+    "variant_Premium",
+    "variant_EV",
+    "variant_Sport",
+    "station_exposure_duration",
+    "total_production_time",
+    "stations_visited_count",
+    "cycle_time_mean",
+    "cycle_time_max",
+    "cycle_time_deviation_mean",
+    "cycle_time_deviation_max",
+    "cycle_time_deviation_cumulative",
+    "queue_exposure_mean",
+    "queue_exposure_max",
+    "queue_exposure_cumulative",
+    "buffer_exposure_mean",
+    "buffer_exposure_max",
+    "vibration_mean",
+    "vibration_max",
+    "temperature_mean",
+    "temperature_max",
+    "motor_current_mean",
+    "motor_current_max",
+    "motor_current_variance_mean",
+    "motor_current_variance_max",
+    "S3_visited",
+    "S3_torque_exposure",
+    "S3_current_variance_exposure",
+    "state_blocked_count",
+    "state_starved_count",
+    "state_down_fault_count",
+    "state_warning_count",
+    "machine_state_abnormal_ratio",
+    "phase4_anomaly_score_mean",
+    "phase4_anomaly_score_max",
+    "phase4_anomalies_detected_count",
+    "phase4_high_severity_count",
+    "phase5_bottleneck_risk_mean",
+    "phase5_bottleneck_risk_max",
+    "phase5_propagation_risk_max",
+    "number_of_abnormal_events"
+  ],
+  "class_distribution": {
+    "train_positives": 110,
+    "train_negatives": 190,
+    "defect_percentage": 36.67
+  },
+  "imbalance_strategy": "scale_pos_weight",
+  "split_strategy": "simulation_run_grouped",
+  "random_seed": 42,
+  "validation_metrics": {
+    "logistic_regression": {
+      "precision": 0.8333,
+      "recall": 0.75,
+      "f1": 0.7895,
+      "roc_auc": 0.8547,
+      "pr_auc": 0.8257,
+      "high_severity_recall": 1.0,
+      "expected_calibration_error": 0.0979,
+      "brier_score": 0.1423,
+      "confusion_matrix": [
+        [
+          81,
+          9
+        ],
+        [
+          15,
+          45
+        ]
+      ]
+    },
+    "random_forest": {
+      "precision": 0.8846,
+      "recall": 0.7667,
+      "f1": 0.8214,
+      "roc_auc": 0.8679,
+      "pr_auc": 0.8313,
+      "high_severity_recall": 1.0,
+      "expected_calibration_error": 0.0978,
+      "brier_score": 0.1274,
+      "confusion_matrix": [
+        [
+          84,
+          6
+        ],
+        [
+          14,
+          46
+        ]
+      ]
+    },
+    "xgboost": {
+      "precision": 0.8654,
+      "recall": 0.75,
+      "f1": 0.8036,
+      "roc_auc": 0.8619,
+      "pr_auc": 0.8147,
+      "high_severity_recall": 1.0,
+      "expected_calibration_error": 0.0588,
+      "brier_score": 0.1252,
+      "confusion_matrix": [
+        [
+          83,
+          7
+        ],
+        [
+          15,
+          45
+        ]
+      ]
+    }
+  },
+  "test_metrics": {
+    "precision": 0.6187,
+    "recall": 0.8515,
+    "f1": 0.7167,
+    "roc_auc": 0.8326,
+    "pr_auc": 0.7527,
+    "high_severity_recall": 1.0,
+    "expected_calibration_error": 0.1431,
+    "brier_score": 0.1879,
+    "confusion_matrix": [
+      [
+        96,
+        53
+      ],
+      [
+        15,
+        86
+      ]
+    ]
+  },
+  "calibration_method": "isotonic",
+  "risk_thresholds": {
+    "low_threshold": 0.25,
+    "high_threshold": 0.6
+  },
+  "training_timestamp": 1788029795.58231
+}

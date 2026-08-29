@@ -1,0 +1,126 @@
+{
+  "models_dir": "backend/models/quality",
+  "total_test_vehicles": 250,
+  "overall": {
+    "precision": 0.6187,
+    "recall": 0.8515,
+    "f1": 0.7167,
+    "roc_auc": 0.8326,
+    "pr_auc": 0.7527,
+    "high_severity_recall": 1.0,
+    "expected_calibration_error": 0.1431,
+    "brier_score": 0.1879,
+    "confusion_matrix": [
+      [
+        96,
+        53
+      ],
+      [
+        15,
+        86
+      ]
+    ]
+  },
+  "scenarios": {
+    "NORMAL": {
+      "precision": 0.1875,
+      "recall": 0.75,
+      "f1": 0.3,
+      "roc_auc": 0.4762,
+      "pr_auc": 0.1642,
+      "high_severity_recall": 0.0,
+      "expected_calibration_error": 0.4272,
+      "brier_score": 0.3524,
+      "confusion_matrix": [
+        [
+          16,
+          26
+        ],
+        [
+          2,
+          6
+        ]
+      ]
+    },
+    "GRADUAL_S3_DEGRADATION": {
+      "precision": 0.82,
+      "recall": 1.0,
+      "f1": 0.9011,
+      "roc_auc": 0.3238,
+      "pr_auc": 0.7541,
+      "high_severity_recall": 1.0,
+      "expected_calibration_error": 0.0808,
+      "brier_score": 0.1685,
+      "confusion_matrix": [
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          41
+        ]
+      ]
+    },
+    "SUDDEN_FAILURE": {
+      "precision": 0.8667,
+      "recall": 1.0,
+      "f1": 0.9286,
+      "roc_auc": 0.8193,
+      "pr_auc": 0.9047,
+      "high_severity_recall": 1.0,
+      "expected_calibration_error": 0.0789,
+      "brier_score": 0.1045,
+      "confusion_matrix": [
+        [
+          5,
+          6
+        ],
+        [
+          0,
+          39
+        ]
+      ]
+    },
+    "SENSOR_MISSINGNESS": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.3178,
+      "pr_auc": 0.0865,
+      "high_severity_recall": 0.0,
+      "expected_calibration_error": 0.1243,
+      "brier_score": 0.1487,
+      "confusion_matrix": [
+        [
+          36,
+          9
+        ],
+        [
+          5,
+          0
+        ]
+      ]
+    },
+    "OTHER_STATION_DISTURBANCE": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.5461,
+      "pr_auc": 0.1782,
+      "high_severity_recall": 0.0,
+      "expected_calibration_error": 0.1215,
+      "brier_score": 0.1653,
+      "confusion_matrix": [
+        [
+          39,
+          3
+        ],
+        [
+          8,
+          0
+        ]
+      ]
+    }
+  }
+}
