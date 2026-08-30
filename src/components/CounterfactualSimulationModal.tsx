@@ -1,6 +1,5 @@
 import React from 'react';
 import { useFactorySimulation } from '../context/FactorySimulationContext';
-import { SIMULATION_SCENARIOS } from '../data/factoryData';
 import { ScenarioId, SimulationScenario } from '../types';
 import {
   GitBranch,
@@ -24,13 +23,15 @@ export const CounterfactualSimulationModal: React.FC = () => {
     setActiveScenarioId,
     applyIntervention,
     interventionApplied,
-    revertIntervention
+    revertIntervention,
+    scenarios,
+    isLoadingScenarios,
+    scenarioError
   } = useFactorySimulation();
 
   if (!isWhatIfModalOpen) return null;
 
-  const scenarios = SIMULATION_SCENARIOS;
-  const currentScenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[1];
+  const currentScenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[0];
 
   const handleApply = (scenarioId: ScenarioId) => {
     applyIntervention(scenarioId);
@@ -70,8 +71,11 @@ export const CounterfactualSimulationModal: React.FC = () => {
 
         {/* 4 Scenario Selection Cards */}
         <div className="p-5 overflow-y-auto space-y-5 flex-1">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {isLoadingScenarios && <div className="text-emerald-400 font-mono text-sm animate-pulse">Running Counterfactual Simulator & Optimization Engine...</div>}
+          {scenarioError && <div className="text-red-400 font-mono text-sm">Failed to run optimization: {scenarioError}</div>}
+          {!isLoadingScenarios && scenarios.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {scenarios.map((scen) => {
               const isSelected = activeScenarioId === scen.id;
 
@@ -135,6 +139,7 @@ export const CounterfactualSimulationModal: React.FC = () => {
           </div>
 
           {/* Selected Scenario Deep-Dive Panel */}
+          {currentScenario && (
           <div className={`p-4 rounded-xl border font-mono ${
             currentScenario.isRecommended
               ? 'bg-emerald-950/30 border-emerald-500/40'
@@ -176,6 +181,9 @@ export const CounterfactualSimulationModal: React.FC = () => {
               </div>
             </div>
           </div>
+          )}
+            </>
+          )}
 
         </div>
 
@@ -207,11 +215,16 @@ export const CounterfactualSimulationModal: React.FC = () => {
 
             <button
               id="apply-to-twin-btn"
-              onClick={() => handleApply(currentScenario.id)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-heading font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+              onClick={() => { if(currentScenario) handleApply(currentScenario.id); }}
+              disabled={!currentScenario}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-heading font-bold shadow-md transition-all ${
+                currentScenario
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-600/25 active:scale-95'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              }`}
             >
               <Zap className="w-4 h-4" />
-              <span>APPLY {currentScenario.label} TO DIGITAL TWIN</span>
+              <span>APPLY {currentScenario?.label || 'INTERVENTION'} TO DIGITAL TWIN</span>
             </button>
           </div>
         </div>

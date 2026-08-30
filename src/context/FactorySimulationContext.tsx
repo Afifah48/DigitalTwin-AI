@@ -11,9 +11,9 @@ import {
 import {
   INITIAL_STATIONS,
   INITIAL_VEHICLES,
-  SIMULATION_SCENARIOS,
   STORY_SCENES
 } from '../data/factoryData';
+import { fetchScenarios } from '../services/api';
 import { soundFx } from '../utils/audioSynthesizer';
 
 interface FactorySimulationContextType {
@@ -63,6 +63,9 @@ interface FactorySimulationContextType {
   isWhatIfModalOpen: boolean;
   openWhatIfModal: (scenarioId?: ScenarioId) => void;
   closeWhatIfModal: () => void;
+  scenarios: SimulationScenario[];
+  isLoadingScenarios: boolean;
+  scenarioError: string | null;
 
   isUncertaintyModalOpen: boolean;
   openUncertaintyModal: () => void;
@@ -96,14 +99,18 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   const [isWhyModalOpen, setIsWhyModalOpen] = useState<boolean>(false);
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState<boolean>(false);
   const [isUncertaintyModalOpen, setIsUncertaintyModalOpen] = useState<boolean>(false);
+  
+  const [scenarios, setScenarios] = useState<SimulationScenario[]>([]);
+  const [isLoadingScenarios, setIsLoadingScenarios] = useState<boolean>(false);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
 
   const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
 
   const currentScene = useMemo(() => STORY_SCENES[currentSceneIndex] || STORY_SCENES[0], [currentSceneIndex]);
 
   const activeScenario = useMemo(() => {
-    return SIMULATION_SCENARIOS.find((s) => s.id === activeScenarioId) || SIMULATION_SCENARIOS[1];
-  }, [activeScenarioId]);
+    return scenarios.find((s) => s.id === activeScenarioId) || scenarios[0] || null;
+  }, [activeScenarioId, scenarios]);
 
   const setViewMode = useCallback((mode: AppViewMode) => {
     setViewModeState(mode);
@@ -185,11 +192,34 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
     soundFx.playClick();
   }, []);
 
-  const openWhatIfModal = useCallback((scenarioId?: ScenarioId) => {
-    if (scenarioId) setActiveScenarioId(scenarioId);
+  const openWhatIfModal = useCallback(async (scenarioId?: ScenarioId) => {
     setIsWhatIfModalOpen(true);
     soundFx.playScanPing();
-  }, []);
+    
+    // Fetch if not loaded
+    if (scenarios.length === 0) {
+      setIsLoadingScenarios(true);
+      setScenarioError(null);
+      try {
+        const fetchedScenarios = await fetchScenarios();
+        setScenarios(fetchedScenarios);
+        
+        // Find best candidate if scenarioId not passed
+        if (!scenarioId) {
+            const best = fetchedScenarios.find(s => s.isRecommended);
+            if (best) {
+                setActiveScenarioId(best.id);
+            }
+        }
+      } catch (err) {
+        setScenarioError((err as Error).message);
+      } finally {
+        setIsLoadingScenarios(false);
+      }
+    }
+    
+    if (scenarioId) setActiveScenarioId(scenarioId);
+  }, [scenarios.length]);
 
   const closeWhatIfModal = useCallback(() => {
     setIsWhatIfModalOpen(false);
@@ -207,63 +237,36 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   }, []);
 
   const applyIntervention = useCallback((scenarioId?: ScenarioId) => {
-    const chosenScenario = scenarioId || activeScenarioId;
-    setActiveScenarioId(chosenScenario);
+    const chosenScenarioId = scenarioId || activeScenarioId;
+    setActiveScenarioId(chosenScenarioId);
+    
+    const chosenScenario = scenarios.find(s => s.id === chosenScenarioId);
+    
     setInterventionApplied(true);
     soundFx.playInterventionSuccess();
+
+    if (!chosenScenario) return;
 
     // Dynamically update stations based on the intervention
     setStations((prev) =>
       prev.map((station) => {
-        if (station.id === 'S3') {
-          return {
-            ...station,
-            deviationScore: 0.05,
-            telemetry: {
-              ...station.telemetry,
-              cycleTime: 52.0,
-              queueLength: 1,
-              wip: 2,
-              vibration: 1.2,
-              motorCurrent: 14.8,
-              currentVariance: 0.15,
-              machineState: 'RUNNING'
-            }
-          };
-        }
-        if (station.id === 'S2') {
-          // S2 backlog clears
-          return {
-            ...station,
-            deviationScore: 0.06,
-            telemetry: {
-              ...station.telemetry,
-              cycleTime: 54.0,
-              queueLength: 2,
-              wip: 2,
-              machineState: 'RUNNING'
-            }
-          };
-        }
-        if (station.id === 'S4') {
-          // S4 receives surge volume and becomes emerging secondary constraint!
-          return {
-            ...station,
-            deviationScore: 0.58, // Secondary bottleneck emergence
-            telemetry: {
-              ...station.telemetry,
-              cycleTime: 58.5,
-              queueLength: 4,
-              wip: 4,
-              utilization: 97.8,
-              machineState: 'RUNNING'
-            }
-          };
+        // If the station is part of the affected stations or the bottleneck shifted to it
+        // Note: the backend result does not provide individual station granular telemetry, 
+        // so we visualize the high-level impact (throughput/queue) conceptually.
+        if (chosenScenario.affectedStations.includes(station.id) || chosenScenario.bottleneckMigrated) {
+            return {
+                ...station,
+                deviationScore: 0.05,
+                telemetry: {
+                  ...station.telemetry,
+                  machineState: 'RUNNING'
+                }
+            };
         }
         return station;
       })
     );
-  }, [activeScenarioId]);
+  }, [activeScenarioId, scenarios]);
 
   const revertIntervention = useCallback(() => {
     setInterventionApplied(false);
@@ -398,6 +401,9 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
         isWhatIfModalOpen,
         openWhatIfModal,
         closeWhatIfModal,
+        scenarios,
+        isLoadingScenarios,
+        scenarioError,
         isUncertaintyModalOpen,
         openUncertaintyModal,
         closeUncertaintyModal,
