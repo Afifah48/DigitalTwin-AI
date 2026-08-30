@@ -29,8 +29,29 @@ export const CommandCenterMatrix: React.FC = () => {
     openWhatIfModal,
     openUncertaintyModal,
     selectVehicleById,
-    selectStationById
+    selectStationById,
+    factoryDecision,
+    activeScenario
   } = useFactorySimulation();
+
+  // Dynamic calculations
+  const avgDev = stations.length > 0
+    ? stations.reduce((acc, s) => acc + s.deviationScore, 0) / stations.length
+    : 0.05;
+  const factoryHealthScore = Math.max(70.0, Math.min(99.9, Math.round((1 - avgDev * 0.3) * 1000) / 10));
+
+  const highRiskVehicles = vehicles.filter((v) => v.qualityExposure === 'HIGH');
+  const highRiskCount = highRiskVehicles.length;
+
+  const currentUph = interventionApplied
+    ? (activeScenario?.counterfactualThroughput || 43)
+    : (activeScenario?.baselineThroughput || 34);
+
+  const uphDelta = activeScenario?.throughputDeltaUPH ?? (interventionApplied ? 9 : -8);
+
+  const confidencePct = factoryDecision?.confidence
+    ? Math.round(factoryDecision.confidence * 100)
+    : 96;
 
   return (
     <div className="w-full space-y-5">
@@ -45,8 +66,10 @@ export const CommandCenterMatrix: React.FC = () => {
             <Activity className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-cyan-300">94.2%</span>
-            <span className="text-[10px] text-emerald-400 font-bold">NOMINAL</span>
+            <span className="text-2xl font-black text-cyan-300">{factoryHealthScore}%</span>
+            <span className={`text-[10px] font-bold ${factoryHealthScore > 90 ? 'text-emerald-400' : 'text-amber-400'}`}>
+              {factoryHealthScore > 90 ? 'NOMINAL' : 'ATTENTION'}
+            </span>
           </div>
         </div>
 
@@ -94,12 +117,12 @@ export const CommandCenterMatrix: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-black text-emerald-400">
-              {interventionApplied ? '43' : '34'}
+              {Math.round(currentUph)}
             </span>
             <span className="text-[10px] text-slate-400">UPH</span>
           </div>
           <span className="text-[10px] text-emerald-400 block">
-            {interventionApplied ? '+9 UPH gained' : '-8 UPH degradation'}
+            {uphDelta >= 0 ? `+${uphDelta}` : `${uphDelta}`} UPH {uphDelta >= 0 ? 'gained' : 'variance'}
           </span>
         </div>
 
@@ -110,10 +133,10 @@ export const CommandCenterMatrix: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
           </div>
           <div className="text-sm font-bold text-white">
-            {interventionApplied ? (
-              <span className="text-emerald-400">LOW (1 CAR)</span>
+            {highRiskCount === 0 ? (
+              <span className="text-emerald-400">NOMINAL (0 CARS)</span>
             ) : (
-              <span className="text-amber-400">HIGH (CAR-1044)</span>
+              <span className="text-amber-400">FLAGGED ({highRiskCount} {highRiskCount === 1 ? 'CAR' : 'CARS'})</span>
             )}
           </div>
           <span className="text-[10px] text-slate-400 block mt-0.5">
@@ -128,7 +151,7 @@ export const CommandCenterMatrix: React.FC = () => {
             <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-cyan-300">
-            96%
+            {confidencePct}%
           </div>
           <span className="text-[10px] text-slate-400 block">
             MC Dropout (50 passes)

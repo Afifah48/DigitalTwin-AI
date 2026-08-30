@@ -13,7 +13,22 @@ import {
 } from 'lucide-react';
 
 export const BottleneckMigrationView: React.FC = () => {
-  const { interventionApplied, applyIntervention } = useFactorySimulation();
+  const {
+    stations,
+    interventionApplied,
+    applyIntervention,
+    activeScenario,
+    factoryDecision
+  } = useFactorySimulation();
+
+  const s2 = stations.find((s) => s.id === 'S2');
+  const s3 = stations.find((s) => s.id === 'S3');
+  const s4 = stations.find((s) => s.id === 'S4');
+
+  const s3Ct = s3?.telemetry.cycleTime.toFixed(1) || '79.6';
+  const s2Queue = s2?.telemetry.queueLength || 5;
+  const s4Util = s4?.telemetry.utilization ? Math.round(s4.telemetry.utilization) : 68;
+  const uphGain = activeScenario?.throughputDeltaUPH ? (activeScenario.throughputDeltaUPH > 0 ? `+${activeScenario.throughputDeltaUPH}` : `${activeScenario.throughputDeltaUPH}`) : '+9';
 
   return (
     <div className="w-full bg-[#080B11] p-4 lg:p-6 rounded-2xl border border-indigo-500/30 shadow-2xl relative overflow-hidden">
@@ -41,10 +56,10 @@ export const BottleneckMigrationView: React.FC = () => {
         {!interventionApplied && (
           <button
             onClick={() => applyIntervention('ADD_OPERATOR')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all cursor-pointer"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>APPLY SCENARIO B TO SEE MIGRATION</span>
+            <span>APPLY {activeScenario?.label || 'SCENARIO B'} TO SEE MIGRATION</span>
           </button>
         )}
       </div>
@@ -59,22 +74,22 @@ export const BottleneckMigrationView: React.FC = () => {
           <div className="flex items-center justify-between mb-3 text-xs">
             <span className="text-slate-400 font-bold uppercase">1. BEFORE INTERVENTION</span>
             <span className="px-2 py-0.5 rounded bg-red-950 text-red-300 font-bold text-[10px]">
-              S3 = PRIMARY BOTTLENECK
+              {factoryDecision?.primary_issue ? 'PRIMARY BOTTLENECK ACTIVE' : 'S3 = PRIMARY BOTTLENECK'}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
             <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center">
               <span>S3 Chassis Marriage:</span>
-              <span className="text-red-400 font-bold">79.6s Cycle Time (Locked)</span>
+              <span className="text-red-400 font-bold">{s3Ct}s Cycle Time (Degraded)</span>
             </div>
             <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center">
               <span>Upstream S2 Buffer:</span>
-              <span className="text-amber-400 font-bold">5 / 5 (100% Saturated)</span>
+              <span className="text-amber-400 font-bold">{s2Queue} / 5 ({Math.min(100, Math.round((s2Queue / 5) * 100))}% Saturated)</span>
             </div>
             <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center">
               <span>Downstream S4 Powertrain:</span>
-              <span className="text-indigo-300">STARVED (68% Utilization)</span>
+              <span className="text-indigo-300">STARVED ({s4Util}% Utilization)</span>
             </div>
           </div>
         </div>
@@ -95,12 +110,12 @@ export const BottleneckMigrationView: React.FC = () => {
               <span>S3 Chassis Marriage:</span>
               <span className="text-emerald-400 font-bold flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                52.0s (Nominal & Balanced)
+                {s3?.telemetry.baselineCycleTime || 52.0}s (Nominal & Balanced)
               </span>
             </div>
             <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center">
               <span>S3 Output Surge:</span>
-              <span className="text-emerald-400 font-bold">+9 Vehicles/Hour</span>
+              <span className="text-emerald-400 font-bold">{uphGain} Vehicles/Hour</span>
             </div>
             <div className="p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex justify-between items-center">
               <span>S4 Powertrain Influx:</span>
@@ -113,7 +128,7 @@ export const BottleneckMigrationView: React.FC = () => {
 
       {/* Causal Feedback loop insight */}
       <div className="mt-4 p-3 bg-indigo-950/20 rounded-xl border border-indigo-500/20 text-xs font-mono text-slate-300">
-        <strong>Digital Twin Closed Loop:</strong> The moment S3 recovers, the Digital Twin recalculates the global plant flow vector. It flags that S4 Powertrain will become the next constraint in 23 minutes, allowing operators to pre-stage battery pack AGVs before S4 queue peaks.
+        <strong>Digital Twin Closed Loop:</strong> The moment S3 recovers, the Digital Twin recalculates the global plant flow vector. It flags that S4 Powertrain will absorb the surge volume within 23 minutes, allowing operators to pre-stage battery pack AGVs before S4 buffer locks.
       </div>
 
     </div>

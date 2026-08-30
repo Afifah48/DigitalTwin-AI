@@ -19,25 +19,45 @@ export const DigitalTwinGraphView: React.FC = () => {
     vehicles,
     selectStationById,
     selectVehicleById,
-    interventionApplied
+    interventionApplied,
+    trajectoryData,
+    explainabilityData
   } = useFactorySimulation();
 
   const [activeTab, setActiveTab] = useState<'SPATIAL' | 'TEMPORAL' | 'CROSS_ATTN'>('SPATIAL');
   const [hoveredStation, setHoveredStation] = useState<StationId | null>('S3');
 
-  const timeSteps = [
-    { label: 'T-60m', type: 'HISTORICAL', attention: 0.12, note: 'Nominal DES baseline' },
-    { label: 'T-50m', type: 'HISTORICAL', attention: 0.18, note: 'Normal variance' },
-    { label: 'T-40m', type: 'HISTORICAL', attention: 0.28, note: 'Micro-vibration inception' },
-    { label: 'T-30m', type: 'HISTORICAL', attention: 0.44, note: 'Cycle time +2.8s' },
-    { label: 'T-20m', type: 'HISTORICAL', attention: 0.68, note: 'Spindle #4 torque variance ↑' },
-    { label: 'T-10m', type: 'HISTORICAL', attention: 0.86, note: 'δ(t) reaches 15.4s' },
-    { label: 'NOW (T-0)', type: 'CURRENT', attention: 1.0, note: '87% Bottleneck Alert Issued' },
-    { label: 'T+5m', type: 'FORECAST', attention: 0.94, note: 'Queue locks to 5/5 buffer' },
-    { label: 'T+10m', type: 'FORECAST', attention: 0.88, note: 'S2 Paint upstream blocked' },
-    { label: 'T+14m', type: 'FORECAST', attention: 0.82, note: 'Predicted Hard Stoppage' },
-    { label: 'T+20m', type: 'FORECAST', attention: 0.75, note: 'Downstream S4 full starved' }
-  ];
+  const timeSteps = (trajectoryData && trajectoryData.length > 0)
+    ? trajectoryData.map((pt) => {
+        const isCurrent = pt.timeOffsetMin === 0;
+        const isForecast = pt.timeOffsetMin > 0;
+        const type = isCurrent ? 'CURRENT' : (isForecast ? 'FORECAST' : 'HISTORICAL');
+        const attention = isCurrent ? 1.0 : (isForecast ? Math.max(0.6, 1.0 - pt.timeOffsetMin * 0.015) : Math.min(0.9, 0.15 + (pt.timeOffsetMin + 60) * 0.012));
+        
+        let note = `Observed: ${pt.observed.toFixed(1)}s (δ ${pt.deltaT >= 0 ? '+' : ''}${pt.deltaT.toFixed(1)}s)`;
+        if (isCurrent) note = `Active δ(t) = +${pt.deltaT.toFixed(1)}s | Alert Issued`;
+        else if (isForecast) note = `DES Projection: ${pt.observed.toFixed(1)}s [±${((pt.upperBand - pt.lowerBand)/2).toFixed(1)}s]`;
+        
+        return {
+          label: pt.timestampLabel,
+          type,
+          attention: Number(attention.toFixed(2)),
+          note
+        };
+      })
+    : [
+        { label: 'T-60m', type: 'HISTORICAL', attention: 0.12, note: 'Nominal DES baseline' },
+        { label: 'T-50m', type: 'HISTORICAL', attention: 0.18, note: 'Normal variance' },
+        { label: 'T-40m', type: 'HISTORICAL', attention: 0.28, note: 'Micro-vibration inception' },
+        { label: 'T-30m', type: 'HISTORICAL', attention: 0.44, note: 'Cycle time +2.8s' },
+        { label: 'T-20m', type: 'HISTORICAL', attention: 0.68, note: 'Spindle #4 torque variance ↑' },
+        { label: 'T-10m', type: 'HISTORICAL', attention: 0.86, note: 'δ(t) reaches 15.4s' },
+        { label: 'NOW (T-0)', type: 'CURRENT', attention: 1.0, note: '87% Bottleneck Alert Issued' },
+        { label: 'T+5m', type: 'FORECAST', attention: 0.94, note: 'Queue locks to 5/5 buffer' },
+        { label: 'T+10m', type: 'FORECAST', attention: 0.88, note: 'S2 Paint upstream blocked' },
+        { label: 'T+14m', type: 'FORECAST', attention: 0.82, note: 'Predicted Hard Stoppage' },
+        { label: 'T+20m', type: 'FORECAST', attention: 0.75, note: 'Downstream S4 full starved' }
+      ];
 
   return (
     <div className="w-full bg-[#080B11] p-4 lg:p-6 rounded-2xl border border-purple-500/30 shadow-2xl relative overflow-hidden">
