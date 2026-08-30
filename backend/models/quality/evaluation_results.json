@@ -1,5 +1,5 @@
 {
-  "models_dir": "backend/models/quality",
+  "models_dir": "C:\\Desktop\\digitwin\\DigitalTwin-AI\\backend\\models\\quality",
   "total_test_vehicles": 250,
   "overall": {
     "precision": 0.6187,
