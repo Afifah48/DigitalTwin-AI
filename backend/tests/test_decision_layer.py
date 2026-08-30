@@ -419,7 +419,11 @@ class TestDecisionLayerSubsystem(unittest.TestCase):
         service = DecisionService()
         dec_1 = service.analyze(self.base_time + 50.0, self.nominal_telemetry)
         dec_2 = service.analyze(self.base_time + 50.0, self.nominal_telemetry)
-        self.assertEqual(dec_1.to_dict(), dec_2.to_dict())
+        d1 = dec_1.to_dict()
+        d2 = dec_2.to_dict()
+        d1.get("audit_trail", {}).pop("execution_timestamp", None)
+        d2.get("audit_trail", {}).pop("execution_timestamp", None)
+        self.assertEqual(d1, d2)
 
     # 23. Schema Validation
     def test_23_schema_validation(self) -> None:

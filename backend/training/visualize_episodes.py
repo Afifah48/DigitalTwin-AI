@@ -98,6 +98,9 @@ def plot_episode_trajectories(data_dir: str = "data", output_image: str = "episo
         axes[6, col_idx].grid(True, alpha=0.3)
         axes[6, col_idx].legend(loc="lower left", fontsize=8)
 
+    out_dir = os.path.dirname(os.path.abspath(output_image))
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     plt.savefig(output_image, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"[Plot] Saved trajectory comparison figure to {os.path.abspath(output_image)}")

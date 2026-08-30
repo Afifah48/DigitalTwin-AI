@@ -4,6 +4,13 @@ Executes detailed technical validations for Steps 2 to 13.
 """
 
 import sys
+from pathlib import Path
+
+# Ensure root directory is on sys.path when executed directly
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 import numpy as np
 from backend.twin.digital_twin import DigitalTwin
 from backend.config.factory_config import get_default_factory_config
