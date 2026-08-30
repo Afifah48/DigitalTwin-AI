@@ -1,4 +1,4 @@
-import { SimulationScenario } from '../types';
+import { SimulationScenario, FactoryStateResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -23,6 +23,21 @@ export async function fetchScenarios(): Promise<SimulationScenario[]> {
     return data.scenarios;
   } catch (error) {
     console.error('API Error in fetchScenarios:', error);
+    throw error;
+  }
+}
+
+export async function fetchFactoryState(): Promise<FactoryStateResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/factory-state`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch factory state: HTTP ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('API Error in fetchFactoryState:', error);
     throw error;
   }
 }
