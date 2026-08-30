@@ -394,14 +394,14 @@ export const FactoryLineCanvas: React.FC = () => {
                 <div className="bg-slate-900/70 p-1 rounded">
                   <span className="text-slate-400 text-[8px] block">QUEUE / WIP</span>
                   <div className="flex items-center gap-1 font-bold text-slate-200">
-                    <span>{station.telemetry.queueLength}</span>
+                    <span>{stationVehicles.length}</span>
                     <div className="flex gap-0.5">
                       {Array.from({ length: station.telemetry.bufferMax }).map((_, bi) => (
                         <div
                           key={bi}
                           className={`w-1 h-2 rounded-2xs ${
-                            bi < station.telemetry.queueLength
-                              ? station.telemetry.queueLength >= 4
+                            bi < stationVehicles.length
+                              ? stationVehicles.length >= 4
                                 ? 'bg-amber-400'
                                 : 'bg-cyan-400'
                               : 'bg-slate-800'

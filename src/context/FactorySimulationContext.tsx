@@ -6,14 +6,15 @@ import {
   SimulationScenario,
   ScenarioId,
   AppViewMode,
-  StoryScene
+  StoryScene,
+  FactoryDecision
 } from '../types';
 import {
   INITIAL_STATIONS,
   INITIAL_VEHICLES,
   STORY_SCENES
 } from '../data/factoryData';
-import { fetchScenarios } from '../services/api';
+import { fetchScenarios, fetchFactoryState } from '../services/api';
 import { soundFx } from '../utils/audioSynthesizer';
 
 interface FactorySimulationContextType {
@@ -71,6 +72,9 @@ interface FactorySimulationContextType {
   openUncertaintyModal: () => void;
   closeUncertaintyModal: () => void;
 
+  // Phase 7 Decision
+  factoryDecision: FactoryDecision | null;
+
   // Audio Soundscape
   isSoundMuted: boolean;
   toggleSound: () => void;
@@ -105,6 +109,30 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   const [scenarioError, setScenarioError] = useState<string | null>(null);
 
   const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
+  const [factoryDecision, setFactoryDecision] = useState<FactoryDecision | null>(null);
+
+  // Poll Phase 4-7 factory state from backend
+  useEffect(() => {
+    let active = true;
+    const fetchState = async () => {
+      try {
+        const state = await fetchFactoryState();
+        if (!active) return;
+        if (state.stations && state.stations.length > 0) setStations(state.stations as StationData[]);
+        if (state.vehicles && state.vehicles.length > 0) setVehicles(state.vehicles as Vehicle[]);
+        if (state.decision) setFactoryDecision(state.decision);
+      } catch (err) {
+        console.warn('Factory state API unavailable, using static data:', err);
+      }
+    };
+    
+    fetchState();
+    const intervalId = setInterval(fetchState, 2000);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const currentScene = useMemo(() => STORY_SCENES[currentSceneIndex] || STORY_SCENES[0], [currentSceneIndex]);
 
@@ -283,78 +311,18 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
     soundFx.playScanPing();
   }, []);
 
-  // Main simulation tick loop
+  // Main simulation tick loop (now only for countdown, state is backend-driven)
   useEffect(() => {
     if (!isPlaying) return;
 
     const interval = setInterval(() => {
       const deltaSec = 0.5 * simSpeed;
-
       setSimTimeSec((prev) => prev + deltaSec);
 
       // Countdown to bottleneck
       setCountdownSec((prev) => {
-        if (interventionApplied) {
-          // If intervention applied, countdown resets / is disabled
-          return 840;
-        }
+        if (interventionApplied) return 840;
         return Math.max(0, prev - deltaSec);
-      });
-
-      // Move vehicles smoothly through stations
-      setVehicles((prevVehicles) => {
-        return prevVehicles.map((vehicle) => {
-          let newProgress = vehicle.progressInStation + 1.2 * simSpeed;
-          let newStation = vehicle.currentStationId;
-          let newHistory = [...vehicle.history];
-          let newRisk = vehicle.riskScore;
-          let newExposure = vehicle.qualityExposure;
-
-          if (newProgress >= 100) {
-            newProgress = 0;
-            // Advance station
-            if (newStation === 'S1') newStation = 'S2';
-            else if (newStation === 'S2') newStation = 'S3';
-            else if (newStation === 'S3') {
-              newStation = 'S4';
-              // If pass through S3 without intervention, lock high exposure
-              if (!interventionApplied && vehicle.id === 'CAR-1044') {
-                newExposure = 'HIGH';
-                newRisk = 88;
-              } else if (interventionApplied) {
-                newExposure = 'LOW';
-                newRisk = 12;
-              }
-            } else if (newStation === 'S4') newStation = 'S5';
-            else if (newStation === 'S5') newStation = 'S6';
-            else if (newStation === 'S6') newStation = 'S1'; // loop in demo
-          }
-
-          return {
-            ...vehicle,
-            progressInStation: newProgress,
-            currentStationId: newStation,
-            history: newHistory,
-            riskScore: newRisk,
-            qualityExposure: newExposure
-          };
-        });
-      });
-
-      // Subtle dynamic noise in telemetry for live realism
-      setStations((prevStations) => {
-        return prevStations.map((st) => {
-          const noise = (Math.random() - 0.5) * 0.4;
-          const currentNoise = (Math.random() - 0.5) * 0.15;
-          return {
-            ...st,
-            telemetry: {
-              ...st.telemetry,
-              temperature: Number((st.telemetry.temperature + noise * 0.05).toFixed(1)),
-              motorCurrent: Number((st.telemetry.motorCurrent + currentNoise).toFixed(1))
-            }
-          };
-        });
       });
     }, 500);
 
@@ -407,6 +375,7 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
         isUncertaintyModalOpen,
         openUncertaintyModal,
         closeUncertaintyModal,
+        factoryDecision,
         isSoundMuted,
         toggleSound
       }}

@@ -83,16 +83,50 @@ export interface SimulationScenario {
   description: string;
   badgeColor: string;
   isRecommended: boolean;
-  throughputDeltaUPH: number; // e.g. +9
-  bottleneckProbabilityT20: number; // e.g. 12%
+  throughputDeltaUPH: number;
+  bottleneckProbabilityT20: number;
   queueLengthT20: number;
   highRiskVehiclesT20: number;
-  estimatedCostDowntime: number; // $
+  estimatedCostDowntime: number;
   recoveryTimeMinutes: number;
-  confidenceScore: number; // e.g. 92%
+  confidenceScore: number;
   trajectoryPoints: TrajectoryPoint[];
   keyActions: string[];
+  // Phase 8/9 backend fields
+  affectedStations?: string[];
+  bottleneckMigrated?: boolean;
+  baselineThroughput?: number;
+  counterfactualThroughput?: number;
+  baselineQueue?: number;
+  baselineRisk?: number;
+  riskDelta?: number;
+  score?: number;
 }
+
+export interface FactoryDecision {
+  timestamp: number;
+  factory_status: string;
+  overall_risk: number;
+  primary_issue: string | null;
+  affected_stations: string[];
+  affected_vehicles: string[];
+  root_causes: { hypothesis_id: string; category: string; description: string; confidence: number; station_id?: string }[];
+  recommended_actions: { action: string; priority: string; target: string; reason: string }[];
+  confidence: number;
+}
+
+export interface FactoryStateResponse {
+  stations: (StationData & {
+    p4_anomaly_score?: number;
+    p4_detected?: boolean;
+    p5_risk_score?: number;
+    p5_persistence?: number;
+    p5_propagation?: number;
+  })[];
+  vehicles: Vehicle[];
+  decision: FactoryDecision;
+}
+
 
 export interface ExplainabilityAttribution {
   featureAttributions: {

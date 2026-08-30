@@ -8,6 +8,7 @@ from backend.config.factory_config import get_default_factory_config
 from backend.models.enums import StationId
 from backend.optimization.models import OptimizationObjective, InterventionConstraint
 from backend.optimization.optimizer import InterventionOptimizer
+from backend.factory_state import get_factory_state
 
 app = FastAPI(title="Digital Twin AI - Phase 10/11 Integration API")
 
@@ -88,6 +89,14 @@ def _map_to_scenario(
         "baselineRisk": result.baseline_risk,
         "riskDelta": result.risk_delta
     }
+
+@app.get("/api/factory-state")
+def get_factory_state_endpoint():
+    """
+    Aggregated factory state from Phase 4 (anomaly), Phase 5 (bottleneck),
+    Phase 6 (quality), and Phase 7 (decision/recommendation).
+    """
+    return get_factory_state()
 
 @app.get("/api/scenarios")
 def get_scenarios():
