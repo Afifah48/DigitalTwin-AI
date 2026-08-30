@@ -74,9 +74,7 @@ export interface TrajectoryPoint {
   deltaT: number; // observed - baseline
   isForecast: boolean;
 }
-
-export type ScenarioId = 'NO_ACTION' | 'ADD_OPERATOR' | 'MAINTENANCE' | 'RESEQUENCING';
-
+export type ScenarioId = string;
 export interface SimulationScenario {
   id: ScenarioId;
   label: string;
