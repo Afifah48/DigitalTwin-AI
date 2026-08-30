@@ -131,6 +131,8 @@ The current simulation represents a six-stage automotive assembly line:
     ▼
  [OUT FLOW]
 ```
+<img width="1895" height="911" alt="image" src="https://github.com/user-attachments/assets/d65f7460-ff0c-42ff-be9e-80f6ffb421c6" />
+
 
 The backend defines five finite-capacity buffers, with the default capacity configured as five vehicles. The simulation naturally models **starvation**, **blocking**, and machine downtime/recovery rather than simply hard-coding a visual state.
 
@@ -464,6 +466,8 @@ This makes predictions more useful for human operators.
 
 ---
 
+
+
 # 🎲 Uncertainty Estimation
 
 Predictions without uncertainty can be misleading.
@@ -492,6 +496,8 @@ The current uncertainty endpoint performs **50 Monte Carlo forward passes** acro
 and returns a 90% prediction envelope.
 
 Conceptually:
+<img width="1600" height="698" alt="WhatsApp Image 2026-08-31 at 00 05 50" src="https://github.com/user-attachments/assets/5b2c4c93-0a92-401c-a6cd-46a4192bf180" />
+
 
 ```text
 Cycle Time
@@ -702,6 +708,8 @@ Recommended Action
 ```
 
 ---
+<img width="1636" height="847" alt="image" src="https://github.com/user-attachments/assets/f2f1897a-e0c4-43f0-90f8-d02ee78096c3" />
+
 
 # 🚗 Vehicle-Level Intelligence
 
@@ -740,6 +748,8 @@ This creates a link between:
 **factory-level performance → station-level degradation → vehicle-level quality exposure**
 
 ---
+<img width="1670" height="697" alt="image" src="https://github.com/user-attachments/assets/7edc4c07-685f-4dbc-9470-94135bda0e41" />
+
 
 # 🖥️ Frontend
 
