@@ -7,14 +7,26 @@ import {
   ScenarioId,
   AppViewMode,
   StoryScene,
-  FactoryDecision
+  FactoryDecision,
+  ExplainabilityAttribution,
+  MonteCarloPass,
+  TrajectoryPoint
 } from '../types';
 import {
   INITIAL_STATIONS,
   INITIAL_VEHICLES,
-  STORY_SCENES
+  STORY_SCENES,
+  EXPLAINABILITY_DATA,
+  MONTE_CARLO_PASSES,
+  HISTORICAL_AND_FORECAST_TRAJECTORY
 } from '../data/factoryData';
-import { fetchScenarios, fetchFactoryState } from '../services/api';
+import {
+  fetchScenarios,
+  fetchFactoryState,
+  fetchExplainability,
+  fetchUncertainty,
+  fetchTrajectory
+} from '../services/api';
 import { soundFx } from '../utils/audioSynthesizer';
 
 interface FactorySimulationContextType {
@@ -75,6 +87,15 @@ interface FactorySimulationContextType {
   // Phase 7 Decision
   factoryDecision: FactoryDecision | null;
 
+  // Dynamic ML / Analytics Models
+  explainabilityData: ExplainabilityAttribution;
+  uncertaintyData: {
+    station_id?: string;
+    passes: MonteCarloPass[];
+    envelope?: { timeMin: number; mean: number; lowerBand90: number; upperBand90: number; stdDev: number }[];
+  };
+  trajectoryData: TrajectoryPoint[];
+
   // Audio Soundscape
   isSoundMuted: boolean;
   toggleSound: () => void;
@@ -111,7 +132,18 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
   const [factoryDecision, setFactoryDecision] = useState<FactoryDecision | null>(null);
 
-  // Poll Phase 4-7 factory state from backend
+  // Dynamic ML / Analytics state
+  const [explainabilityData, setExplainabilityData] = useState<ExplainabilityAttribution>(EXPLAINABILITY_DATA);
+  const [uncertaintyData, setUncertaintyData] = useState<{
+    station_id?: string;
+    passes: MonteCarloPass[];
+    envelope?: { timeMin: number; mean: number; lowerBand90: number; upperBand90: number; stdDev: number }[];
+  }>({
+    passes: MONTE_CARLO_PASSES
+  });
+  const [trajectoryData, setTrajectoryData] = useState<TrajectoryPoint[]>(HISTORICAL_AND_FORECAST_TRAJECTORY);
+
+  // Poll Phase 4-11 factory state from backend
   useEffect(() => {
     let active = true;
     const fetchState = async () => {
@@ -121,8 +153,11 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
         if (state.stations && state.stations.length > 0) setStations(state.stations as StationData[]);
         if (state.vehicles && state.vehicles.length > 0) setVehicles(state.vehicles as Vehicle[]);
         if (state.decision) setFactoryDecision(state.decision);
+        if (state.explainability) setExplainabilityData(state.explainability);
+        if (state.uncertainty) setUncertaintyData(state.uncertainty);
+        if (state.trajectory && state.trajectory.length > 0) setTrajectoryData(state.trajectory);
       } catch (err) {
-        console.warn('Factory state API unavailable, using static data:', err);
+        console.warn('Factory state API unavailable, using cached state:', err);
       }
     };
     
@@ -210,10 +245,17 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
     }
   }, [vehicles]);
 
-  const openWhyModal = useCallback(() => {
+  const openWhyModal = useCallback(async () => {
     setIsWhyModalOpen(true);
     soundFx.playAlertChime();
-  }, []);
+    try {
+      const stId = selectedStation?.id || 'S3';
+      const dynamicExp = await fetchExplainability(stId);
+      if (dynamicExp) setExplainabilityData(dynamicExp);
+    } catch {
+      // Fallback
+    }
+  }, [selectedStation]);
 
   const closeWhyModal = useCallback(() => {
     setIsWhyModalOpen(false);
@@ -232,7 +274,6 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
         const fetchedScenarios = await fetchScenarios();
         setScenarios(fetchedScenarios);
         
-        // Find best candidate if scenarioId not passed
         if (!scenarioId) {
             const best = fetchedScenarios.find(s => s.isRecommended);
             if (best) {
@@ -254,10 +295,17 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
     soundFx.playClick();
   }, []);
 
-  const openUncertaintyModal = useCallback(() => {
+  const openUncertaintyModal = useCallback(async () => {
     setIsUncertaintyModalOpen(true);
     soundFx.playScanPing();
-  }, []);
+    try {
+      const stId = selectedStation?.id || 'S3';
+      const dynamicUnc = await fetchUncertainty(stId);
+      if (dynamicUnc) setUncertaintyData(dynamicUnc);
+    } catch {
+      // Fallback
+    }
+  }, [selectedStation]);
 
   const closeUncertaintyModal = useCallback(() => {
     setIsUncertaintyModalOpen(false);
@@ -275,13 +323,9 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
 
     if (!chosenScenario) return;
 
-    // Dynamically update stations based on the intervention
     setStations((prev) =>
       prev.map((station) => {
-        // If the station is part of the affected stations or the bottleneck shifted to it
-        // Note: the backend result does not provide individual station granular telemetry, 
-        // so we visualize the high-level impact (throughput/queue) conceptually.
-        if (chosenScenario.affectedStations.includes(station.id) || chosenScenario.bottleneckMigrated) {
+        if (chosenScenario.affectedStations?.includes(station.id) || chosenScenario.bottleneckMigrated) {
             return {
                 ...station,
                 deviationScore: 0.05,
@@ -311,7 +355,7 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
     soundFx.playScanPing();
   }, []);
 
-  // Main simulation tick loop (now only for countdown, state is backend-driven)
+  // Main simulation tick loop
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -376,6 +420,9 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
         openUncertaintyModal,
         closeUncertaintyModal,
         factoryDecision,
+        explainabilityData,
+        uncertaintyData,
+        trajectoryData,
         isSoundMuted,
         toggleSound
       }}

@@ -23,7 +23,9 @@ export const PredictiveBottleneckCard: React.FC = () => {
     openWhyModal,
     openWhatIfModal,
     interventionApplied,
-    applyIntervention
+    applyIntervention,
+    factoryDecision,
+    activeScenario
   } = useFactorySimulation();
 
   const formatCountdown = (seconds: number) => {
@@ -31,6 +33,13 @@ export const PredictiveBottleneckCard: React.FC = () => {
     const secs = Math.floor(seconds % 60);
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
+
+  const dynamicRiskProb = factoryDecision?.overall_risk 
+    ? Math.round(factoryDecision.overall_risk * 100) 
+    : 87;
+  const dynamicAvertedCost = activeScenario?.estimatedCostDowntime 
+    ? `$${activeScenario.estimatedCostDowntime.toLocaleString()}` 
+    : '$142,000';
 
   if (interventionApplied) {
     return (
@@ -45,13 +54,13 @@ export const PredictiveBottleneckCard: React.FC = () => {
                 <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-300 font-bold">
                   PREEMPTIVE INTERVENTION ACTIVE
                 </span>
-                <span className="text-xs font-mono text-slate-400">Policy: Scenario B</span>
+                <span className="text-xs font-mono text-slate-400">Policy: {activeScenario?.label || 'Scenario B'}</span>
               </div>
               <h3 className="font-heading font-bold text-xl text-white mt-0.5">
                 S3 CHASSIS BOTTLENECK AVERTED
               </h3>
               <p className="text-xs font-mono text-slate-300">
-                Cycle time stabilized to 52.0s • Upstream S2 buffer unlocked • Line throughput increased to <strong>43 UPH (+9)</strong>
+                Cycle time stabilized to 52.0s • Upstream S2 buffer unlocked • Line throughput increased to <strong>{activeScenario ? `${activeScenario.throughputDeltaUPH >= 0 ? '+' : ''}${activeScenario.throughputDeltaUPH} UPH` : '+9 UPH'}</strong>
               </p>
             </div>
           </div>
@@ -59,11 +68,11 @@ export const PredictiveBottleneckCard: React.FC = () => {
           <div className="flex items-center gap-3 font-mono text-xs">
             <div className="bg-slate-900/80 p-2.5 rounded-lg border border-emerald-500/30">
               <span className="text-slate-400 text-[10px] block">AVERTED DOWNTIME COST</span>
-              <span className="text-emerald-400 font-bold text-base">$142,000</span>
+              <span className="text-emerald-400 font-bold text-base">{dynamicAvertedCost}</span>
             </div>
             <button
               onClick={() => openWhatIfModal()}
-              className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-heading font-semibold transition-colors"
+              className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-heading font-semibold transition-colors cursor-pointer"
             >
               COMPARE OTHER SCENARIOS
             </button>
@@ -95,7 +104,7 @@ export const PredictiveBottleneckCard: React.FC = () => {
                 AI PREDICTIVE BOTTLENECK ALERT
               </span>
               <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-amber-300 font-bold">
-                PROBABILITY: 87%
+                PROBABILITY: {dynamicRiskProb}%
               </span>
             </div>
 

@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 
 export const TrajectoryDeviationChart: React.FC = () => {
-  const { openWhyModal, openWhatIfModal, interventionApplied } = useFactorySimulation();
+  const { openWhyModal, openWhatIfModal, interventionApplied, trajectoryData } = useFactorySimulation();
   const [hoveredPoint, setHoveredPoint] = useState<TrajectoryPoint | null>(null);
 
-  const data = HISTORICAL_AND_FORECAST_TRAJECTORY;
+  const data = trajectoryData && trajectoryData.length > 0 ? trajectoryData : HISTORICAL_AND_FORECAST_TRAJECTORY;
 
   // Chart dimensions & scaling
   const width = 800;

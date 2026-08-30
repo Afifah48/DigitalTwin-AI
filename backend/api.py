@@ -8,7 +8,12 @@ from backend.config.factory_config import get_default_factory_config
 from backend.models.enums import StationId
 from backend.optimization.models import OptimizationObjective, InterventionConstraint
 from backend.optimization.optimizer import InterventionOptimizer
-from backend.factory_state import get_factory_state
+from backend.factory_state import (
+    get_factory_state,
+    get_explainability_data,
+    get_uncertainty_data,
+    get_trajectory_data
+)
 
 app = FastAPI(title="Digital Twin AI - Phase 10/11 Integration API")
 
@@ -20,6 +25,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/api/explainability")
+def get_explainability_endpoint(station_id: str = "S3"):
+    """
+    Computes real-time XAI feature attributions, spatial attention weights, and changepoints.
+    """
+    return get_explainability_data(station_id)
+
+@app.get("/api/uncertainty")
+def get_uncertainty_endpoint(station_id: str = "S3"):
+    """
+    Computes 50 Monte Carlo forward passes and 90% prediction envelopes.
+    """
+    return get_uncertainty_data(station_id)
+
+@app.get("/api/trajectory")
+def get_trajectory_endpoint(station_id: str = "S3"):
+    """
+    Computes real rolling 60-min historical trajectory + 20-min DES forecasting curve.
+    """
+    return get_trajectory_data(station_id)
 
 def _map_to_scenario(
     scenario_id: str,

@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 
 export const UncertaintyViewModal: React.FC = () => {
-  const { isUncertaintyModalOpen, closeUncertaintyModal, stations } = useFactorySimulation();
+  const { isUncertaintyModalOpen, closeUncertaintyModal, stations, uncertaintyData } = useFactorySimulation();
 
   if (!isUncertaintyModalOpen) return null;
 
-  const passes = MONTE_CARLO_PASSES;
+  const passes = uncertaintyData?.passes || MONTE_CARLO_PASSES;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">

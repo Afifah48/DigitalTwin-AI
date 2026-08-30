@@ -125,6 +125,13 @@ export interface FactoryStateResponse {
   })[];
   vehicles: Vehicle[];
   decision: FactoryDecision;
+  explainability?: ExplainabilityAttribution;
+  uncertainty?: {
+    station_id?: string;
+    passes: MonteCarloPass[];
+    envelope?: { timeMin: number; mean: number; lowerBand90: number; upperBand90: number; stdDev: number }[];
+  };
+  trajectory?: TrajectoryPoint[];
 }
 
 

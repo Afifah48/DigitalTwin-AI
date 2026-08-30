@@ -15,12 +15,12 @@ import {
 } from 'lucide-react';
 
 export const ExplainabilityModal: React.FC = () => {
-  const { isWhyModalOpen, closeWhyModal, openWhatIfModal } = useFactorySimulation();
+  const { isWhyModalOpen, closeWhyModal, openWhatIfModal, explainabilityData } = useFactorySimulation();
   const [activeTab, setActiveTab] = useState<'FEATURE' | 'SPATIAL' | 'TEMPORAL'>('FEATURE');
 
   if (!isWhyModalOpen) return null;
 
-  const { featureAttributions, spatialAttribution, temporalAttribution } = EXPLAINABILITY_DATA;
+  const { featureAttributions, spatialAttribution, temporalAttribution } = explainabilityData;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
