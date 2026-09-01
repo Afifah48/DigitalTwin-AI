@@ -4,13 +4,89 @@
 
 > **An AI-powered automotive manufacturing digital twin that moves factory operations from reactive monitoring to predictive, explainable, and simulation-driven intervention.**
 
+<p align="center">
+
+🌐 **Live Demo:** https://digital-twin-backend.vercel.app/
+
+📘 **Swagger API:** https://digital-twin-backend.vercel.app/docs
+
+❤️ **API Health:** https://digital-twin-backend.vercel.app/api/health
+
+💻 **GitHub Repository:** https://github.com/Afifah48/DigitalTwin-AI
+
+</p>
+
 DigitalTwin.AI is an end-to-end cyber-physical decision-support platform for automotive manufacturing. It combines a **discrete-event factory simulation**, **telemetry analytics**, **anomaly detection**, **bottleneck prediction**, **quality-risk estimation**, **explainable AI**, **uncertainty estimation**, **counterfactual simulation**, and **intervention optimization** into a single interactive command center.
 
 Instead of waiting for a production bottleneck to occur, the system continuously analyzes factory behavior, predicts where degradation is heading, explains the contributing factors, evaluates possible interventions in a simulated twin, and recommends an action based on risk, throughput, queue pressure, cost, and operational disruption.
 
 ---
 
-## 🎯 The Problem
+# 🌐 Live Deployment
+
+DigitalTwin.AI is deployed and publicly accessible through Vercel.
+
+### 🚀 Live Dashboard
+
+**https://digital-twin-backend.vercel.app/**
+
+The production deployment contains the interactive Digital Twin dashboard, including:
+
+* Factory visualization
+* Predictive bottleneck analysis
+* Trajectory analysis
+* Explainability
+* Uncertainty estimation
+* Counterfactual scenarios
+* Intervention optimization
+* Command Center views
+* Vehicle-level inspection
+
+### 📘 Live Swagger API Documentation
+
+**https://digital-twin-backend.vercel.app/docs**
+
+Interactive OpenAPI/Swagger documentation for the deployed FastAPI backend.
+
+### ❤️ Backend Health Check
+
+**https://digital-twin-backend.vercel.app/api/health**
+
+Use this endpoint to verify that the deployed backend is online.
+
+Example response:
+
+```json
+{
+  "status": "healthy",
+  "timestamp": 0,
+  "uptime": "active"
+}
+```
+
+### 🔗 Production Architecture
+
+```text
+User
+  │
+  ▼
+https://digital-twin-backend.vercel.app/
+  │
+  ├── React/Vite Dashboard
+  │
+  └── FastAPI Backend
+          │
+          ├── /api/factory-state
+          ├── /api/explainability
+          ├── /api/uncertainty
+          ├── /api/trajectory
+          ├── /api/scenarios
+          └── /api/health
+```
+
+---
+
+# 🎯 The Problem
 
 Modern automotive production lines are highly interconnected.
 
@@ -74,18 +150,18 @@ The digital twin models a sequential production line containing **six stations a
 
 On top of this simulation layer, the platform adds multiple intelligence layers:
 
-| Layer                     | Purpose                                  |
-| ------------------------- | ---------------------------------------- |
-| Digital Twin              | Simulates the manufacturing system       |
-| Telemetry Analytics       | Understands current factory behavior     |
-| Anomaly Detection         | Detects abnormal machine behavior        |
-| Bottleneck Intelligence   | Predicts emerging bottlenecks            |
-| Quality Intelligence      | Estimates vehicle quality risk           |
-| Explainability            | Explains why a station is becoming risky |
-| Uncertainty               | Quantifies prediction variability        |
-| Counterfactual Simulation | Tests "what-if" interventions            |
-| Optimization              | Selects high-value interventions         |
-| Command Center            | Presents decisions to operators          |
+| Layer | Purpose |
+| --- | --- |
+| Digital Twin | Simulates the manufacturing system |
+| Telemetry Analytics | Understands current factory behavior |
+| Anomaly Detection | Detects abnormal machine behavior |
+| Bottleneck Intelligence | Predicts emerging bottlenecks |
+| Quality Intelligence | Estimates vehicle quality risk |
+| Explainability | Explains why a station is becoming risky |
+| Uncertainty | Quantifies prediction variability |
+| Counterfactual Simulation | Tests "what-if" interventions |
+| Optimization | Selects high-value interventions |
+| Command Center | Presents decisions to operators |
 
 ---
 
@@ -124,15 +200,15 @@ The current simulation represents a six-stage automotive assembly line:
 └────────────────────┘
     │ B56
     ▼
-┌────────────────────┐
-│ S6 FINAL INSPECTION│
-└────────────────────┘
+┌──────────────────────┐
+│ S6 FINAL INSPECTION  │
+└──────────────────────┘
     │
     ▼
  [OUT FLOW]
 ```
-<img width="1895" height="911" alt="image" src="https://github.com/user-attachments/assets/d65f7460-ff0c-42ff-be9e-80f6ffb421c6" />
 
+<img width="1895" height="911" alt="Factory digital twin architecture" src="https://github.com/user-attachments/assets/d65f7460-ff0c-42ff-be9e-80f6ffb421c6" />
 
 The backend defines five finite-capacity buffers, with the default capacity configured as five vehicles. The simulation naturally models **starvation**, **blocking**, and machine downtime/recovery rather than simply hard-coding a visual state.
 
@@ -466,8 +542,6 @@ This makes predictions more useful for human operators.
 
 ---
 
-
-
 # 🎲 Uncertainty Estimation
 
 Predictions without uncertainty can be misleading.
@@ -495,25 +569,6 @@ The current uncertainty endpoint performs **50 Monte Carlo forward passes** acro
 
 and returns a 90% prediction envelope.
 
-Conceptually:
-<img width="1600" height="698" alt="WhatsApp Image 2026-08-31 at 00 05 50" src="https://github.com/user-attachments/assets/5b2c4c93-0a92-401c-a6cd-46a4192bf180" />
-
-
-```text
-Cycle Time
-   │
-   │                  ╭──────── Upper 90%
-   │               ╭──╯
-   │            ╭───┤
-   │         ╭──╯   │
-   │      ───┤ Mean │
-   │   ╭─────╯      │
-   │ ╭─╯             ╰──── Lower 90%
-   │
-   └──────────────────────────────►
-          0   5   10   14   20 min
-```
-
 This helps distinguish:
 
 > **"The model predicts degradation."**
@@ -521,6 +576,8 @@ This helps distinguish:
 from:
 
 > **"The model predicts degradation, and here is how confident we are."**
+
+<img width="1600" height="698" alt="Uncertainty estimation visualization" src="https://github.com/user-attachments/assets/5b2c4c93-0a92-401c-a6cd-46a4192bf180" />
 
 ---
 
@@ -562,8 +619,6 @@ The counterfactual simulator runs baseline and modified digital-twin simulations
 ---
 
 # 🛠️ Available Intervention Types
-
-The optimizer currently evaluates several classes of intervention.
 
 ### 1. Cycle-Time Reduction
 
@@ -616,31 +671,6 @@ Bottleneck Migration / Disruption
 ```
 
 The optimizer generates feasible candidates, rejects actions exceeding the configured budget, simulates each candidate, scores them, and returns the best intervention plus alternatives.
-
-This makes the recommendation closer to an operational decision:
-
-```text
-                    ┌───────────────┐
-                    │ Candidate A   │
-                    └───────┬───────┘
-                            │
-                    ┌───────────────┐
-                    │ Candidate B   │
-                    └───────┬───────┘
-                            │
-                    ┌───────────────┐
-                    │ Candidate C   │
-                    └───────┬───────┘
-                            │
-                            ▼
-                   Multi-objective
-                      evaluation
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │ Best Action   │
-                    └───────────────┘
-```
 
 ---
 
@@ -708,8 +738,6 @@ Recommended Action
 ```
 
 ---
-<img width="1636" height="847" alt="image" src="https://github.com/user-attachments/assets/f2f1897a-e0c4-43f0-90f8-d02ee78096c3" />
-
 
 # 🚗 Vehicle-Level Intelligence
 
@@ -747,9 +775,9 @@ This creates a link between:
 
 **factory-level performance → station-level degradation → vehicle-level quality exposure**
 
----
-<img width="1670" height="697" alt="image" src="https://github.com/user-attachments/assets/7edc4c07-685f-4dbc-9470-94135bda0e41" />
+<img width="1670" height="697" alt="Vehicle intelligence visualization" src="https://github.com/user-attachments/assets/7edc4c07-685f-4dbc-9470-94135bda0e41" />
 
+---
 
 # 🖥️ Frontend
 
@@ -763,7 +791,7 @@ The frontend is built using:
 * Motion
 * Google GenAI package
 
-The project runs the Vite development server on port `3000`.
+The production dashboard is served alongside the FastAPI backend from the Vercel container deployment.
 
 ---
 
@@ -791,8 +819,6 @@ Provides:
 ## COMMAND CENTER
 
 Provides the higher-level operational decision interface.
-
-These modes are routed through the main `App.tsx` component.
 
 ---
 
@@ -857,13 +883,31 @@ Sound can be muted from the application state.
 
 The backend uses **FastAPI**.
 
-Default backend:
+## Production API
+
+```text
+https://digital-twin-backend.vercel.app
+```
+
+## Production Swagger
+
+```text
+https://digital-twin-backend.vercel.app/docs
+```
+
+## Production Health Check
+
+```text
+https://digital-twin-backend.vercel.app/api/health
+```
+
+## Local Development API
 
 ```text
 http://localhost:8000
 ```
 
-Interactive Swagger documentation:
+## Local Swagger
 
 ```text
 http://localhost:8000/docs
@@ -871,14 +915,24 @@ http://localhost:8000/docs
 
 ---
 
-## API Endpoints
+## Production API Endpoints
+
+### `GET /api/health`
+
+Checks whether the deployed backend is healthy.
+
+```text
+https://digital-twin-backend.vercel.app/api/health
+```
+
+---
 
 ### `GET /api/factory-state`
 
 Returns the aggregated factory state.
 
 ```text
-GET /api/factory-state
+https://digital-twin-backend.vercel.app/api/factory-state
 ```
 
 Provides information including:
@@ -890,8 +944,6 @@ Provides information including:
 * Uncertainty
 * Trajectory data
 
-The frontend polls this endpoint periodically.
-
 ---
 
 ### `GET /api/explainability`
@@ -899,10 +951,10 @@ The frontend polls this endpoint periodically.
 Returns explainability information for a station.
 
 ```text
-GET /api/explainability?station_id=S3
+https://digital-twin-backend.vercel.app/api/explainability?station_id=S3
 ```
 
-Used by the dashboard's "Why?" workflow.
+Used by the dashboard's **"Why?"** workflow.
 
 ---
 
@@ -911,7 +963,7 @@ Used by the dashboard's "Why?" workflow.
 Returns Monte Carlo uncertainty information.
 
 ```text
-GET /api/uncertainty?station_id=S3
+https://digital-twin-backend.vercel.app/api/uncertainty?station_id=S3
 ```
 
 Response includes:
@@ -924,8 +976,6 @@ passes
 envelope
 ```
 
-The frontend uses this data to render the uncertainty view.
-
 ---
 
 ### `GET /api/trajectory`
@@ -933,10 +983,8 @@ The frontend uses this data to render the uncertainty view.
 Returns historical and forecast trajectory information.
 
 ```text
-GET /api/trajectory?station_id=S3
+https://digital-twin-backend.vercel.app/api/trajectory?station_id=S3
 ```
-
-The frontend uses this endpoint for trajectory-deviation analysis.
 
 ---
 
@@ -945,7 +993,7 @@ The frontend uses this endpoint for trajectory-deviation analysis.
 Runs the intervention optimization pipeline and returns scenario candidates.
 
 ```text
-GET /api/scenarios
+https://digital-twin-backend.vercel.app/api/scenarios
 ```
 
 The endpoint:
@@ -1025,14 +1073,6 @@ The frontend package uses:
 * Google GenAI SDK
 * Express/Node tooling
 
-The development server is configured to expose Vite on:
-
-```text
-0.0.0.0:3000
-```
-
-with the project scripts providing `dev`, `build`, `preview`, and TypeScript checking.
-
 ---
 
 # 📁 Project Structure
@@ -1040,105 +1080,26 @@ with the project scripts providing `dev`, `build`, `preview`, and TypeScript che
 ```text
 DigitalTwin-AI/
 │
-├── assets/
-│   └── .aistudio/
+├── api/
+│   └── index.py
 │
 ├── backend/
-│   │
 │   ├── analytics/
-│   │   ├── baseline.py
-│   │   ├── buffer.py
-│   │   ├── confidence.py
-│   │   ├── cusum.py
-│   │   ├── deviation.py
-│   │   ├── ewma.py
-│   │   ├── health.py
-│   │   └── pipeline.py
-│   │
 │   ├── app/
-│   │   ├── analytics/
-│   │   ├── decision/
-│   │   ├── explainability/
-│   │   ├── models/
-│   │   └── schemas/
-│   │
 │   ├── bottleneck/
-│   │   ├── demo.py
-│   │   ├── evaluator.py
-│   │   ├── models.py
-│   │   ├── persistence.py
-│   │   ├── pipeline.py
-│   │   ├── propagation.py
-│   │   ├── ranking.py
-│   │   ├── reasoning.py
-│   │   └── risk.py
-│   │
 │   ├── config/
-│   │   └── factory_config.py
-│   │
 │   ├── counterfactual/
-│   │   ├── models.py
-│   │   └── simulator.py
-│   │
-│   ├── data/
-│   │   └── telemetry / historical datasets
-│   │
 │   ├── models/
-│   │   ├── anomaly/
-│   │   ├── decision/
-│   │   ├── quality/
-│   │   ├── enums.py
-│   │   ├── events.py
-│   │   └── states.py
-│   │
 │   ├── optimization/
-│   │   ├── models.py
-│   │   └── optimizer.py
-│   │
 │   ├── quality/
-│   │   ├── calibration.py
-│   │   ├── evaluator.py
-│   │   ├── explain.py
-│   │   ├── features.py
-│   │   ├── models.py
-│   │   ├── risk.py
-│   │   ├── service.py
-│   │   ├── temporal.py
-│   │   └── training.py
-│   │
 │   ├── scenarios/
-│   │   ├── base.py
-│   │   ├── buffer_pressure.py
-│   │   ├── capacity_loss.py
-│   │   ├── composite.py
-│   │   ├── degradation.py
-│   │   ├── failure.py
-│   │   ├── migration.py
-│   │   ├── normal.py
-│   │   ├── quality.py
-│   │   ├── registry.py
-│   │   ├── sensor.py
-│   │   └── surge.py
-│   │
 │   ├── simulation/
-│   │   ├── buffer.py
-│   │   ├── engine.py
-│   │   ├── station.py
-│   │   └── vehicle_generator.py
-│   │
 │   ├── training/
-│   │
 │   ├── twin/
-│   │   └── digital_twin.py
-│   │
 │   ├── api.py
 │   ├── factory_state.py
-│   ├── cli.py
 │   ├── requirements.txt
 │   └── tests/
-│
-├── docs/
-│   └── episode_trajectories.png
 │
 ├── src/
 │   ├── components/
@@ -1151,15 +1112,17 @@ DigitalTwin-AI/
 │   ├── index.css
 │   └── main.tsx
 │
-├── .env.example
-├── index.html
-├── metadata.json
+├── Dockerfile
+├── Dockerfile.vercel
+├── docker-compose.yml
+├── Procfile
 ├── package.json
+├── requirements.txt
+├── server.js
 ├── tsconfig.json
+├── vercel.json
 └── vite.config.ts
 ```
-
-The repository currently contains separate frontend and backend concerns, with the backend itself split into simulation, analytics, bottleneck, quality, counterfactual, optimization, and decision subsystems.
 
 ---
 
@@ -1260,14 +1223,6 @@ The application is configured to run on:
 http://localhost:3000
 ```
 
-The frontend API service currently points to:
-
-```text
-http://localhost:8000
-```
-
-so the backend should be running before using dynamic dashboard features.
-
 ---
 
 # 🧪 Running Tests
@@ -1279,7 +1234,7 @@ The backend includes unit tests covering areas such as:
 * Downtime recovery
 * Throughput metrics
 
-The backend documentation specifies running tests with:
+Run:
 
 ```bash
 python -m pytest backend/tests -v
@@ -1368,57 +1323,70 @@ Important prototype characteristics include:
 * Cached frontend fallback data
 * Demo-specific optimization configuration
 
-The repository explicitly describes the dashboard as simulated data / a concept prototype for a hackathon pitch.
-
 ---
 
 # ⚠️ Current Implementation Notes
 
-A few details are important for anyone extending the project.
+### 1. API configuration
 
-### 1. Local API dependency
-
-The frontend currently uses:
+The frontend/backend deployment uses environment-aware configuration for the API URL. Local development uses:
 
 ```text
 http://localhost:8000
 ```
 
-as its API base URL.
+Production uses:
 
-For deployment, this should be moved into an environment variable.
-
----
-
-### 2. Development CORS
-
-The FastAPI backend currently allows all origins:
-
-```python
-allow_origins=["*"]
+```text
+https://digital-twin-backend.vercel.app
 ```
 
-This is convenient for development/hackathon usage but should be restricted for production deployment.
+### 2. CORS
 
----
+The FastAPI backend supports `ALLOWED_ORIGINS` through the environment and currently defaults to permissive access for development/demo use.
 
 ### 3. Demo-specific bottleneck
 
-The scenario API deliberately modifies S4's baseline cycle time to create the demonstration bottleneck:
+The scenario API deliberately modifies S4's baseline cycle time:
 
 ```text
 S4 baseline cycle time = 75 seconds
 ```
 
-This is intentional for the scenario/optimization demo rather than representing a universal factory configuration.
-
----
+This is intentional for the scenario/optimization demo.
 
 ### 4. Counterfactual confidence
 
-The scenario mapping currently exposes a fixed confidence value for some UI fields because the counterfactual result itself does not provide the same uncertainty representation as the dedicated uncertainty endpoint.
+Some scenario confidence values are fixed UI-facing values because the counterfactual result does not expose the same uncertainty representation as the dedicated uncertainty endpoint.
 
-Therefore, the scenario confidence displayed by the frontend should not be interpreted as a statistically calibrated confidence interval.
+---
+
+# ☁️ Deployment
+
+DigitalTwin.AI is deployed using **Vercel** with a containerized FastAPI backend.
+
+The production deployment uses:
+
+```text
+Dockerfile
+Dockerfile.vercel
+vercel.json
+api/index.py
+requirements.txt
+```
+
+The Vercel-specific Docker configuration uses the lightweight production requirements file while the full development/ML dependencies remain in `backend/requirements.txt`.
+
+### Production URLs
+
+| Resource | URL |
+| --- | --- |
+| 🌐 Dashboard | https://digital-twin-backend.vercel.app/ |
+| 📘 Swagger | https://digital-twin-backend.vercel.app/docs |
+| ❤️ Health | https://digital-twin-backend.vercel.app/api/health |
+| 💻 GitHub | https://github.com/Afifah48/DigitalTwin-AI |
+
+The production root URL serves the DigitalTwin.AI dashboard, while `/docs` exposes the FastAPI Swagger interface.
 
 ---
 
@@ -1426,10 +1394,9 @@ Therefore, the scenario confidence displayed by the frontend should not be inter
 
 Before deploying this system against real manufacturing infrastructure:
 
-* Replace wildcard CORS
+* Replace permissive CORS with a restricted production configuration
 * Add authentication/authorization
 * Validate all API inputs
-* Move API URLs to environment configuration
 * Protect operational telemetry
 * Add audit logging
 * Add model versioning
@@ -1456,8 +1423,6 @@ Connect the digital twin to:
 * SCADA
 * Industrial IoT sensors
 
----
-
 ## Phase 2 — Real-Time Digital Twin Synchronization
 
 Replace prepared episode data with continuously synchronized factory state.
@@ -1470,8 +1435,6 @@ Industrial Data Layer
 Digital Twin
 ```
 
----
-
 ## Phase 3 — Advanced Predictive Models
 
 Improve:
@@ -1481,8 +1444,6 @@ Improve:
 * Failure prediction
 * Quality prediction
 * Sequence forecasting
-
----
 
 ## Phase 4 — Calibrated Uncertainty
 
@@ -1494,8 +1455,6 @@ Introduce:
 * Probabilistic forecasting
 
 to provide better-calibrated prediction intervals.
-
----
 
 ## Phase 5 — Automated Root Cause Analysis
 
@@ -1517,8 +1476,6 @@ Vehicle
 Quality
 ```
 
----
-
 ## Phase 6 — Advanced Optimization
 
 Extend the intervention optimizer to include:
@@ -1530,8 +1487,6 @@ Extend the intervention optimizer to include:
 * Tool replacement
 * Shift planning
 * Multi-line optimization
-
----
 
 ## Phase 7 — Human-in-the-Loop Operations
 
@@ -1635,41 +1590,24 @@ The frontend combines simulation, analytics, explanation, uncertainty, and inter
 
 # 📚 Technology Stack
 
-| Area            | Technology                       |
-| --------------- | -------------------------------- |
-| Frontend        | React                            |
-| Language        | TypeScript                       |
-| Build Tool      | Vite                             |
-| Styling         | Tailwind CSS                     |
-| UI Icons        | Lucide React                     |
-| Animation       | Motion                           |
-| Backend         | Python                           |
-| API             | FastAPI                          |
-| Server          | Uvicorn                          |
-| Simulation      | SimPy                            |
-| Data Processing | Pandas / NumPy                   |
-| ML              | scikit-learn / XGBoost / PyTorch |
-| Explainability  | SHAP                             |
-| Data Format     | Apache Parquet                   |
-| Validation      | Pydantic                         |
-| Testing         | Pytest                           |
-| Communication   | REST API                         |
-
-The package manifests and backend requirements define the current dependency stack.
-
----
-
-# 📜 License
-
-Add your preferred open-source license here.
-
-For example:
-
-```text
-MIT License
-```
-
-if the repository is intended to be released under MIT.
+| Area | Technology |
+| --- | --- |
+| Frontend | React |
+| Language | TypeScript |
+| Build Tool | Vite |
+| Styling | Tailwind CSS |
+| UI Icons | Lucide React |
+| Animation | Motion |
+| Backend | Python |
+| API | FastAPI |
+| Server | Uvicorn |
+| Simulation | SimPy |
+| Data Processing | Pandas / NumPy |
+| ML | scikit-learn / XGBoost / PyTorch |
+| Explainability | SHAP |
+| Data Format | Apache Parquet |
+| Validation | Pydantic |
+| Testing | Pytest |
 
 ---
 
@@ -1703,7 +1641,7 @@ Suggested areas for contribution:
 
 **DigitalTwin.AI**
 
-Built as an end-to-end predictive manufacturing intelligence prototype.
+Built collaboratively as an end-to-end predictive manufacturing intelligence prototype.
 
 ---
 
@@ -1745,34 +1683,43 @@ The ultimate goal is a manufacturing environment where operators can ask:
 
 ---
 
-## 🚀 Quick Reference
+# 🚀 Quick Reference
 
-### Start Backend
+| Resource | URL |
+| --- | --- |
+| 🌐 Live Dashboard | https://digital-twin-backend.vercel.app/ |
+| 📘 Swagger API | https://digital-twin-backend.vercel.app/docs |
+| ❤️ API Health | https://digital-twin-backend.vercel.app/api/health |
+| 💻 GitHub | https://github.com/Afifah48/DigitalTwin-AI |
+
+### Local Development
+
+**Backend**
 
 ```bash
 uvicorn backend.api:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Start Frontend
+**Frontend**
 
 ```bash
 npm install
 npm run dev
 ```
 
-### Frontend
+**Local Frontend**
 
 ```text
 http://localhost:3000
 ```
 
-### Backend
+**Local Backend**
 
 ```text
 http://localhost:8000
 ```
 
-### Swagger API
+**Local Swagger**
 
 ```text
 http://localhost:8000/docs
@@ -1781,6 +1728,7 @@ http://localhost:8000/docs
 ### Main APIs
 
 ```text
+GET /api/health
 GET /api/factory-state
 GET /api/explainability?station_id=S3
 GET /api/uncertainty?station_id=S3
