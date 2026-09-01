@@ -18,7 +18,8 @@ import {
   STORY_SCENES,
   EXPLAINABILITY_DATA,
   MONTE_CARLO_PASSES,
-  HISTORICAL_AND_FORECAST_TRAJECTORY
+  HISTORICAL_AND_FORECAST_TRAJECTORY,
+  SIMULATION_SCENARIOS
 } from '../data/factoryData';
 import {
   fetchScenarios,
@@ -125,7 +126,7 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState<boolean>(false);
   const [isUncertaintyModalOpen, setIsUncertaintyModalOpen] = useState<boolean>(false);
   
-  const [scenarios, setScenarios] = useState<SimulationScenario[]>([]);
+  const [scenarios, setScenarios] = useState<SimulationScenario[]>(SIMULATION_SCENARIOS);
   const [isLoadingScenarios, setIsLoadingScenarios] = useState<boolean>(false);
   const [scenarioError, setScenarioError] = useState<string | null>(null);
 
@@ -265,30 +266,32 @@ export const FactorySimulationProvider: React.FC<{ children: React.ReactNode }> 
   const openWhatIfModal = useCallback(async (scenarioId?: ScenarioId) => {
     setIsWhatIfModalOpen(true);
     soundFx.playScanPing();
-    
-    // Fetch if not loaded
-    if (scenarios.length === 0) {
-      setIsLoadingScenarios(true);
-      setScenarioError(null);
-      try {
-        const fetchedScenarios = await fetchScenarios();
-        setScenarios(fetchedScenarios);
-        
-        if (!scenarioId) {
-            const best = fetchedScenarios.find(s => s.isRecommended);
-            if (best) {
-                setActiveScenarioId(best.id);
-            }
-        }
-      } catch (err) {
-        setScenarioError((err as Error).message);
-      } finally {
-        setIsLoadingScenarios(false);
-      }
+
+    if (scenarioId) {
+      setActiveScenarioId(scenarioId);
     }
-    
-    if (scenarioId) setActiveScenarioId(scenarioId);
-  }, [scenarios.length]);
+
+    // Try fetching fresh optimized scenarios in background
+    setIsLoadingScenarios(true);
+    setScenarioError(null);
+    try {
+      const fetchedScenarios = await fetchScenarios();
+      if (fetchedScenarios && fetchedScenarios.length > 0) {
+        setScenarios(fetchedScenarios);
+        if (!scenarioId) {
+          const best = fetchedScenarios.find((s) => s.isRecommended);
+          if (best) {
+            setActiveScenarioId(best.id);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch dynamic scenarios, using local simulations:', err);
+      setScenarioError(null);
+    } finally {
+      setIsLoadingScenarios(false);
+    }
+  }, []);
 
   const closeWhatIfModal = useCallback(() => {
     setIsWhatIfModalOpen(false);

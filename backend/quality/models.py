@@ -1,3 +1,4 @@
+
 """
 Vehicle Quality ML Model Implementations.
 
@@ -13,11 +14,9 @@ import abc
 import json
 import os
 from typing import Any, Dict, Optional, Tuple, Union
+
 import joblib
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-import xgboost as xgb
 
 
 class QualityModelABC(abc.ABC):
@@ -58,10 +57,18 @@ class QualityModelABC(abc.ABC):
 class LogisticRegressionQualityModel(QualityModelABC):
     """Logistic Regression Comparison Baseline with Balanced Class Weights."""
 
-    def __init__(self, C: float = 1.0, max_iter: int = 1000, random_state: int = 42) -> None:
+    def __init__(
+        self,
+        C: float = 1.0,
+        max_iter: int = 1000,
+        random_state: int = 42,
+    ) -> None:
+        from sklearn.linear_model import LogisticRegression
+
         self.C = C
         self.max_iter = max_iter
         self.random_state = random_state
+
         self.model = LogisticRegression(
             C=C,
             max_iter=max_iter,
@@ -69,6 +76,7 @@ class LogisticRegressionQualityModel(QualityModelABC):
             random_state=random_state,
             solver="lbfgs",
         )
+
         self.is_fitted = False
 
     def fit(
@@ -85,22 +93,30 @@ class LogisticRegressionQualityModel(QualityModelABC):
     def predict(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before predict!")
+
         return self.model.predict(X)
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before predict_proba!")
+
         probs = self.model.predict_proba(X)
         return probs[:, 1]
 
     def save(self, filepath: str) -> None:
-        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
+        os.makedirs(
+            os.path.dirname(os.path.abspath(filepath)),
+            exist_ok=True,
+        )
+
         joblib.dump(self, filepath)
 
     def load(self, filepath: str) -> LogisticRegressionQualityModel:
         loaded = joblib.load(filepath)
+
         self.model = loaded.model
         self.is_fitted = loaded.is_fitted
+
         return self
 
 
@@ -114,10 +130,13 @@ class RandomForestQualityModel(QualityModelABC):
         min_samples_split: int = 4,
         random_state: int = 42,
     ) -> None:
+        from sklearn.ensemble import RandomForestClassifier
+
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.random_state = random_state
+
         self.model = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
@@ -126,6 +145,7 @@ class RandomForestQualityModel(QualityModelABC):
             random_state=random_state,
             n_jobs=-1,
         )
+
         self.is_fitted = False
 
     def fit(
@@ -142,22 +162,30 @@ class RandomForestQualityModel(QualityModelABC):
     def predict(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before predict!")
+
         return self.model.predict(X)
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before predict_proba!")
+
         probs = self.model.predict_proba(X)
         return probs[:, 1]
 
     def save(self, filepath: str) -> None:
-        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
+        os.makedirs(
+            os.path.dirname(os.path.abspath(filepath)),
+            exist_ok=True,
+        )
+
         joblib.dump(self, filepath)
 
     def load(self, filepath: str) -> RandomForestQualityModel:
         loaded = joblib.load(filepath)
+
         self.model = loaded.model
         self.is_fitted = loaded.is_fitted
+
         return self
 
 
@@ -186,7 +214,11 @@ class XGBoostQualityModel(QualityModelABC):
         self.colsample_bytree = colsample_bytree
         self.scale_pos_weight = scale_pos_weight
         self.random_state = random_state
-        self.model: Optional[xgb.XGBClassifier] = None
+
+        # Keep this as Any so XGBoost does not need to be imported
+        # when this module is loaded.
+        self.model: Optional[Any] = None
+
         self.is_fitted = False
 
     def fit(
@@ -196,11 +228,16 @@ class XGBoostQualityModel(QualityModelABC):
         val_X: Optional[np.ndarray] = None,
         val_y: Optional[np.ndarray] = None,
     ) -> XGBoostQualityModel:
-        # Calculate dynamic class imbalance weight if not specified
+        import xgboost as xgb
+
+        # Calculate dynamic class imbalance weight if not specified.
         if self.scale_pos_weight is None:
             n_pos = np.sum(y == 1)
             n_neg = np.sum(y == 0)
-            spw = float(n_neg / max(1, n_pos))
+
+            spw = float(
+                n_neg / max(1, n_pos)
+            )
         else:
             spw = float(self.scale_pos_weight)
 
@@ -220,42 +257,73 @@ class XGBoostQualityModel(QualityModelABC):
             self.model.fit(
                 X,
                 y,
-                eval_set=[(X, y), (val_X, val_y)],
+                eval_set=[
+                    (X, y),
+                    (val_X, val_y),
+                ],
                 verbose=False,
             )
         else:
-            self.model.fit(X, y, verbose=False)
+            self.model.fit(
+                X,
+                y,
+                verbose=False,
+            )
 
         self.is_fitted = True
+
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted or self.model is None:
-            raise RuntimeError("Model must be fitted before predict!")
+            raise RuntimeError(
+                "Model must be fitted before predict!"
+            )
+
         return self.model.predict(X)
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted or self.model is None:
-            raise RuntimeError("Model must be fitted before predict_proba!")
+            raise RuntimeError(
+                "Model must be fitted before predict!"
+            )
+
         probs = self.model.predict_proba(X)
+
         return probs[:, 1]
 
     def save(self, filepath: str) -> None:
         """Saves model to JSON format (or joblib if .joblib)."""
-        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
+
+        os.makedirs(
+            os.path.dirname(os.path.abspath(filepath)),
+            exist_ok=True,
+        )
+
         if filepath.endswith(".json"):
+            if self.model is None:
+                raise RuntimeError(
+                    "Model must be fitted before saving!"
+                )
+
             self.model.save_model(filepath)
         else:
             joblib.dump(self, filepath)
 
     def load(self, filepath: str) -> XGBoostQualityModel:
         """Loads model from JSON format or joblib."""
+
         if filepath.endswith(".json"):
+            import xgboost as xgb
+
             self.model = xgb.XGBClassifier()
             self.model.load_model(filepath)
             self.is_fitted = True
+
         else:
             loaded = joblib.load(filepath)
+
             self.model = loaded.model
             self.is_fitted = loaded.is_fitted
+
         return self

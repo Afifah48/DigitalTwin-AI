@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  digitaltwin-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - PORT=8000
+      - ALLOWED_ORIGINS=*
+    restart: unless-stopped
